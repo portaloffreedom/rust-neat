@@ -1,0 +1,6 @@
+[package]
+name = "neat"
+version = "0.1.0"
+authors = ["Matteo De Carlo <matteo.dek@gmail.com>"]
+
+[dependencies]
