@@ -129,10 +129,12 @@ fn xor_epoch<P: AsRef<Path>>(population: &mut Population, generation: usize, fil
     }
 }
 
+/// Returns the fitness of the winner or the loser
 fn xor_evaluate(organism: &mut Rc<RefCell<Organism>>)
-                -> Result<(), ()>
+                -> Result<f64, f64>
 {
-    Ok(())
+    //TODO evaluate XOR
+    Ok(0.0001)
 }
 
 #[test]

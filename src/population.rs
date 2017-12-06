@@ -226,13 +226,12 @@ impl Population {
         //Sort the Species by max fitness (Use an extra list to do this)
         //These need to use ORIGINAL fitness
         sorted_species.sort_by(|a,b| {
-            let spec_a = a.clone();
-            let spec_b = b.clone();
-            let org_a = spec_a.borrow().organisms.clone();
-            let org_b = spec_b.borrow().organisms.clone();
+            let org_a = &a.borrow().organisms;
+            let org_b = &b.borrow().organisms;
+            let org_a_fitness = org_a.first().unwrap().borrow().orig_fitness;
+            let org_b_fitness = org_b.first().unwrap().borrow().orig_fitness;
             {
-                org_a.first().unwrap().borrow().orig_fitness.clone()
-                .partial_cmp(&org_b.first().unwrap().borrow().orig_fitness.clone())
+                org_a_fitness.partial_cmp(&org_b_fitness)
                 .unwrap()
             }
         });
