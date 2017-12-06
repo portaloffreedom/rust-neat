@@ -1,15 +1,16 @@
-use std::sync::Arc;
+use std::rc::Rc;
+use std::cell::RefCell;
 use link::Link;
 use genome::gene_trait::Trait;
 use node::Node;
 
 #[derive(Clone)]
 pub struct Gene {
-    link: Link,
+    pub link: Link,
 
     innovation_num: f64,
     /// Used to see how much mutation has changed the link
-    mutation_num: f64,
+    pub mutation_num: f64,
 
     /// When this is off the Gene is disabled
     enable: bool,
@@ -19,7 +20,7 @@ pub struct Gene {
 }
 
 impl Gene {
-    pub fn new(trait_gene: Option<Arc<Trait>>, i_node: Arc<Node>, o_node: Arc<Node>, weight: f64, recurrent: bool, innovation_num: f64, mutation_num: f64, enable: bool) -> Self
+    pub fn new(trait_gene: Option<Rc<RefCell<Trait>>>, i_node: Rc<RefCell<Node>>, o_node: Rc<RefCell<Node>>, weight: f64, recurrent: bool, innovation_num: f64, mutation_num: f64, enable: bool) -> Self
     {
         let link = Link::new(trait_gene, weight, i_node, o_node, recurrent);
 
@@ -32,4 +33,6 @@ impl Gene {
             frozen: false,
         }
     }
+
+    pub fn is_frozen(&self) -> bool { self.frozen }
 }

@@ -1,26 +1,27 @@
 use genome::gene_trait::Trait;
 use node::Node;
-use std::sync::Arc;
+use std::rc::Rc;
+use std::cell::RefCell;
 
 #[derive(Clone)]
 pub struct Link {
     /// Weight of the connection
-    weight: f64,
+    pub weight: f64,
     /// Node inputting into the link
-    i_node: Arc<Node>,
+    pub i_node: Rc<RefCell<Node>>,
     /// NNode that the link affects
-    o_node: Arc<Node>,
+    pub o_node: Rc<RefCell<Node>>,
     time_delay: bool,
     recurrent: bool,
 
-    link_trait: Option<Arc<Trait>>,
+    pub link_trait: Option<Rc<RefCell<Trait>>>,
 
     /// The amount of weight adjustment
     added_weight: f64,
 }
 
 impl Link {
-    pub fn new(link_trait: Option<Arc<Trait>>, weight: f64, i_node: Arc<Node>, o_node: Arc<Node>, recurrent: bool)
+    pub fn new(link_trait: Option<Rc<RefCell<Trait>>>, weight: f64, i_node: Rc<RefCell<Node>>, o_node: Rc<RefCell<Node>>, recurrent: bool)
                -> Self
     {
         Link {

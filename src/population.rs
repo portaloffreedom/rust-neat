@@ -2,6 +2,7 @@ use organism::Organism;
 use species::Species;
 use genome::Genome;
 use std::vec::Vec;
+use Mutator;
 
 /// ---------------------------------------------
 /// POPULATION STRUCT:
@@ -37,13 +38,9 @@ pub struct Population {
 }
 
 impl Population {
-    pub fn new(start_genome: Genome, pop_size: usize) -> Self
+    pub fn new(start_genome: &Genome, pop_size: usize) -> Self
     {
-        for count in 0..pop_size {
-            let mut new_genome = start_genome.clone(count as i32);
-        }
-
-        Population {
+        let population = Population {
             organisms: Vec::new(),
             species: Vec::new(),
             cur_node_id: 0,
@@ -55,6 +52,17 @@ impl Population {
             winnergen: 0,
             highest_fitness: 0.0,
             highest_last_changed: 0,
+        };
+
+        for count in 0..pop_size {
+            let mut new_genome = start_genome.clone(count as i32);
+
+            new_genome.mutate_link_weights(1.0, 1.0, Mutator::ColdGaussian);
+//            new_genome.randomize_traits();
+//            let new_organism = Organism::new(0.0, new_genome, 1);
+//            population.organisms.push(new_organism);
         }
+
+        population
     }
 }

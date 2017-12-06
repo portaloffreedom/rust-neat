@@ -2,7 +2,7 @@ pub const NUM_TRAIT_PARAMS: usize = 8;
 
 #[derive(Clone)]
 pub struct Trait {
-    id: i32,
+    pub id: i32,
     params: [f64; NUM_TRAIT_PARAMS]
 }
 

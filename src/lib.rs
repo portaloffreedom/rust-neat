@@ -1,3 +1,5 @@
+extern crate rand;
+
 #[cfg(test)]
 mod tests;
 
@@ -9,3 +11,7 @@ pub mod genome;
 pub mod node;
 pub mod link;
 
+pub enum Mutator {
+    Gaussian,
+    ColdGaussian,
+}
