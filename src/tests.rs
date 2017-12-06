@@ -65,7 +65,7 @@ fn xor_test() {
     for exp_count in 0..env.num_runs {
         println!("Spawning Population off Genome2");
 
-        let population = Population::new(&start_genome, env.pop_size);
+        let population = Population::new(&start_genome, env.pop_size, &env);
 
         println!("Verifying Spawned Pop");
 

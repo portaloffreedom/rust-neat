@@ -4,6 +4,7 @@ pub mod gene_trait;
 use self::gene_trait::Trait;
 use self::gene::Gene;
 use Mutator;
+use env::Env;
 use rand;
 use rand::distributions::{IndependentSample, Range};
 use node::Node;
@@ -138,7 +139,7 @@ impl Genome {
             }
 
 
-            let random_num: f64 = (if rand::random::<bool>() {1.0} else {-1.0})
+            let random_num: f64 = (if rand::random::<bool>() { 1.0 } else { -1.0 })
                 * rand::random::<f64>()
                 * power
                 * powermod;
@@ -151,7 +152,7 @@ impl Genome {
                     } else if random_choice > cold_gauss_point {
                         gene.link.weight = random_num;
                     }
-                },
+                }
                 Mutator::ColdGaussian => {
                     gene.link.weight = random_num;
                 }
@@ -170,7 +171,6 @@ impl Genome {
 
             num += 1.0;
         }
-
     }
 
     pub fn randomize_traits(&mut self) {
@@ -182,5 +182,85 @@ impl Genome {
             let trait_num = between.ind_sample(&mut rng);
             node.borrow_mut().node_trait = Some(self.traits[trait_num].clone());
         }
+
+        for gene in &mut self.genes {
+            let trait_num = between.ind_sample(&mut rng);
+            gene.link.link_trait = Some(self.traits[trait_num].clone());
+        }
+    }
+
+    pub fn get_last_node_id(&self) -> Option<i32>
+    {
+        self.nodes.last().map(|node| node.borrow().id)
+    }
+
+    pub fn get_last_gene_innovnum(&self) -> Option<f64>
+    {
+        self.genes.last().map(|gene| gene.get_innovation_num())
+    }
+
+    pub fn compatibility(&self, other: &Genome, env: &Env) -> f64
+    {
+        //Set up the counters
+        let mut num_disjoint = 0.0;
+        let mut num_excess = 0.0;
+        let mut mut_diff_total = 0.0;
+        let mut num_matching = 0.0;  //Used to normalize mutation_num differences
+
+        //Get the length of the longest Genome for percentage computations
+        let max_genome_size =
+            if self.genes.len() > other.genes.len() {
+                self.genes.len()
+            } else {
+                other.genes.len()
+            } as f64;
+
+        //Now move through the Genes of each potential parent
+        //until both Genomes end
+
+        let mut gene1_iter = self.genes.iter();
+        let mut gene2_iter = other.genes.iter();
+
+        let mut p1gene = gene1_iter.next();
+        let mut p2gene = gene2_iter.next();
+
+        while p1gene.is_some() || p2gene.is_some() {
+            if p1gene.is_none() {
+                p2gene = gene2_iter.next();
+                num_excess += 1.0;
+            } else if p2gene.is_none() {
+                p1gene = gene1_iter.next();
+                num_excess += 1.0;
+            } else {
+                let p1gene_unwrapped = p1gene.unwrap();
+                let p2gene_unwrapped = p2gene.unwrap();
+
+
+                let p1innov = p1gene_unwrapped.get_innovation_num();
+                let p2innov = p2gene_unwrapped.get_innovation_num();
+
+                if p1innov == p2innov {
+                    let mut mut_diff = p1gene_unwrapped.mutation_num - p2gene_unwrapped.mutation_num;
+                    if mut_diff < 0.0 {
+                        mut_diff = 0.0 - mut_diff;
+                    }
+                    mut_diff_total += mut_diff;
+
+                    p1gene = gene1_iter.next();
+                    p2gene = gene2_iter.next();
+                    num_matching += 1.0;
+                } else if p1innov < p2innov {
+                    p1gene = gene1_iter.next();
+                    num_disjoint += 1.0;
+                } else if p2innov < p1innov {
+                    p2gene = gene2_iter.next();
+                    num_disjoint += 1.0;
+                }
+            }
+        }
+
+        env.disjoint_coeff*(num_disjoint/1.0)
+            + env.excess_coeff*(num_excess/1.0)
+            + env.mutdiff_coeff*(mut_diff_total/num_matching)
     }
 }

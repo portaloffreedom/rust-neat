@@ -10,6 +10,7 @@ pub mod organism;
 pub mod genome;
 pub mod node;
 pub mod link;
+pub mod network;
 
 pub enum Mutator {
     Gaussian,
