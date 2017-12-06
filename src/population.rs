@@ -115,4 +115,126 @@ impl Population {
 
         Ok(())
     }
+
+    pub fn epoch(&mut self, generation: usize, env: &Env)
+    {
+        let total_organisms = self.organisms.len();
+
+        let mut sorted_species: Vec<Rc<RefCell<Species>>> = Vec::new();
+
+        for species in &self.species {
+            sorted_species.push(species.clone());
+        }
+
+        //Sort the Species by max fitness (Use an extra list to do this)
+        //These need to use ORIGINAL fitness
+        //sorted_species.qsort(order_species);
+        sorted_species.sort_by(|a, b| {
+            a.borrow().max_fitness
+                .partial_cmp(&b.borrow().max_fitness)
+                .unwrap()
+                //.reverse()
+        });
+
+        //Flag the lowest performing species over age 20 every 30 generations
+        //NOTE: THIS IS FOR COMPETITIVE COEVOLUTION STAGNATION DETECTION
+
+        if generation % 30 == 0 {
+            for species in &sorted_species {
+                if species.borrow().age > 20 {
+                    species.borrow_mut().set_to_obliterate();
+                    break;
+                }
+            }
+        }
+
+        println!("Number of species: {}", self.species.len());
+        println!("compat_treshold: {}", env.compat_threshold);
+
+        // Use Species' ages to modify the objective fitness of organisms in other words,
+        // make it more fair for younger species so they have a chance to take hold.
+        // Also penalize stagnant species.
+        // Then adjust the fitness using the species size to "share" fitness within a species.
+        // Then, within each Species, mark for death those below survival_thresh*average.
+        for species in &self.species {
+            species.borrow_mut().adjust_fitness(env);
+        }
+
+
+        //Go through the organisms and add up their fitnesses to compute the
+        //overall average
+        let mut total_fitness = 0.0;
+        for organism in &self.organisms {
+            total_fitness += organism.borrow().fitness;
+        }
+
+        let overall_average: f64 = total_fitness / total_organisms as f64;
+        println!("Generation {}: overall_average = {}", generation, overall_average);
+
+        //Now compute expected number of offspring for each individual organism
+        for organism in &self.organisms {
+            let mut organism = organism.borrow_mut();
+            organism.expected_offspring =
+                organism.fitness / overall_average;
+        }
+
+        //Now add those offspring up within each Species to get the number of
+        //offspring per Species
+        let mut skim = 0.0;
+        let mut total_expected: usize = 0;
+        for species in &mut self.species {
+            skim = species.borrow_mut().count_offspring(skim);
+            total_expected += species.borrow().expected_offspring;
+        }
+
+        //Need to make up for lost foating point precision in offspring assignment
+        //If we lost precision, give an extra baby to the best Species
+        if total_expected < total_organisms {
+            // Find the Species expecting the most
+            let mut max_expected = 0;
+            let mut final_expected = 0;
+            let mut best_species: Rc<RefCell<Species>> = self.species[0].clone();
+            for _species in &self.species {
+                let species = _species.borrow();
+                if species.expected_offspring >= max_expected {
+                    max_expected = species.expected_offspring;
+                    best_species = _species.clone();
+                }
+                final_expected += species.expected_offspring;
+            }
+
+            // Give the extra offspring to the best species
+            best_species.borrow_mut().expected_offspring += 1;
+            final_expected += 1;
+
+            // If we still aren't at total, there is a problem
+            // Note that this can happen if a stagnant Species
+            // dominates the population and then gets killed off by its age
+            // Then the whole population plummets in fitness
+            // If the average fitness is allowed to hit 0, then we no longer have
+            // an average we can use to assign offspring.\
+            if final_expected < total_organisms {
+                //println!("Population died!");
+                for species in &self.species {
+                    species.borrow_mut().expected_offspring = 0;
+                }
+                best_species.borrow_mut().expected_offspring = total_organisms;
+            }
+        }
+
+
+        //Sort the Species by max fitness (Use an extra list to do this)
+        //These need to use ORIGINAL fitness
+        sorted_species.sort_by(|a,b| {
+            let spec_a = a.clone();
+            let spec_b = b.clone();
+            let org_a = spec_a.borrow().organisms.clone();
+            let org_b = spec_b.borrow().organisms.clone();
+            {
+                org_a.first().unwrap().borrow().orig_fitness.clone()
+                .partial_cmp(&org_b.first().unwrap().borrow().orig_fitness.clone())
+                .unwrap()
+            }
+        });
+    }
 }

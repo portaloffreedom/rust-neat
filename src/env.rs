@@ -60,7 +60,7 @@ pub struct Env {
     // Size of population
     pub pop_size: usize,
     // Age where Species starts to be penalized
-    pub dropoff_age: u32,
+    pub dropoff_age: usize,
     // Number of tries mutate_add_link will attempt to find an open link
     pub newlink_tries: u32,
     // Tells to print population to file every n generations

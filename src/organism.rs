@@ -6,9 +6,9 @@ use std::cell::RefCell;
 
 pub struct Organism {
     ///A measure of fitness for the Organism
-    fitness: f64,
+    pub fitness: f64,
     ///A fitness measure that won't change during adjustments
-    orig_fitness: f64,
+    pub orig_fitness: f64,
     ///Used just for reporting purposes
     error: f64,
     ///Win marker (if needed for a particular task)
@@ -20,7 +20,7 @@ pub struct Organism {
     ///The Organism's Species
     species: Option<Rc<RefCell<Species>>>,
     ///Number of children this Organism may have
-    expected_offspring: f64,
+    pub expected_offspring: f64,
     ///Tells which generation this Organism is from
     generation: usize,
     ///Marker for destruction of inferior Organisms
@@ -89,4 +89,7 @@ impl Organism {
     {
         self.winner
     }
+
+    pub fn set_champion(&mut self, champion: bool) { self.champion = champion; }
+    pub fn set_elimination(&mut self, elimination: bool) { self.eliminate = elimination; }
 }

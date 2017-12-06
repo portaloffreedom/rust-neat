@@ -113,6 +113,8 @@ fn xor_epoch<P: AsRef<Path>>(population: &mut Population, generation: usize, fil
         println!("TODO print on file by species");
     }
 
+    population.epoch(generation, env);
+
     if win {
         for organism in &population.organisms {
             if organism.borrow().is_winner() {
