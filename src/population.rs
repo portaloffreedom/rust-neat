@@ -16,7 +16,7 @@ pub struct Population {
     /// The organisms in the Population
     organisms: Vec<Rc<RefCell<Organism>>>,
     /// Species in the Population. Note that the species should comprise all the genomes
-    species: Vec<Rc<Species>>,
+    species: Vec<Rc<RefCell<Species>>>,
 
     // ******* Member variables used during reproduction *******
     ///// For holding the genetic innovations of the newest generation
@@ -24,7 +24,7 @@ pub struct Population {
     /// Current label number available
     cur_node_id: i32,
     cur_innov_num: f64,
-    last_species: u32,
+    last_species: usize,
 
     // ******* Fitness Statistics *******
     mean_fitness: f64,
@@ -82,24 +82,28 @@ impl Population {
         let mut counter: usize = 0;
 
         for ref mut organism in &self.organisms {
-            if self.species.len() == 0 {
-                //Create the first species
-                counter += 1;
-                let mut new_species = Species::new(counter);
-                new_species.add_organism(organism.clone()); // add current organism
-                let new_species = Rc::new(new_species);
-                organism.borrow_mut().set_species(new_species.clone());
-                self.species.push(new_species); //
-            } else {
-                let mut current_species_iter = self.species.iter();
-                let comparison_organism = self.species.first().unwrap().organisms.first().unwrap();
+            for current_species in self.species.iter_mut() {
+                let comparison_organism = current_species.borrow().organisms.first().unwrap().clone();
 
-                while let Some(current_species) = current_species_iter.next() {
-                    if organism.borrow().genome.compatibility(&comparison_organism.borrow().genome, env) < env.compat_threshold {
-
-                    }
+                if organism.borrow().genome.compatibility(&comparison_organism.borrow().genome, env) < env.compat_threshold {
+                    // Found compatible species, so add this organism to it
+                    current_species.borrow_mut().add_organism(organism.clone());
+                    organism.borrow_mut().set_species(current_species.clone());
+                    // The search is over
+                    break;
                 }
             }
+
+            if !organism.borrow().has_species() {
+                counter += 1;
+                let mut new_species = Species::new(counter);
+                new_species.add_organism(organism.clone());
+                let new_species = Rc::new(RefCell::new(new_species));
+                organism.borrow_mut().set_species(new_species.clone());
+                self.species.push(new_species);
+            }
         }
+
+        self.last_species = counter;
     }
 }

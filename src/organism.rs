@@ -2,6 +2,7 @@ use network::Network;
 use genome::Genome;
 use species::Species;
 use std::rc::Rc;
+use std::cell::RefCell;
 
 pub struct Organism {
     ///A measure of fitness for the Organism
@@ -17,7 +18,7 @@ pub struct Organism {
     ///The Organism's genotype
     pub genome: Box<Genome>,
     ///The Organism's Species
-    species: Option<Rc<Species>>,
+    species: Option<Rc<RefCell<Species>>>,
     ///Number of children this Organism may have
     expected_offspring: f64,
     ///Tells which generation this Organism is from
@@ -69,7 +70,9 @@ impl Organism {
         }
     }
 
-    pub fn set_species(&mut self, species: Rc<Species>) {
+    pub fn set_species(&mut self, species: Rc<RefCell<Species>>) {
         self.species = Some(species);
     }
+
+    pub fn has_species(&self) -> bool { self.species.is_some() }
 }
