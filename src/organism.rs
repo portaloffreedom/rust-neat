@@ -79,4 +79,14 @@ impl Organism {
     {
         self.species.is_some()
     }
+
+    pub fn get_fitness(&self) -> f64
+    {
+        self.fitness
+    }
+
+    pub fn is_winner(&self) -> bool
+    {
+        self.winner
+    }
 }

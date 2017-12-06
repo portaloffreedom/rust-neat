@@ -14,9 +14,9 @@ use env::Env;
 /// ---------------------------------------------
 pub struct Population {
     /// The organisms in the Population
-    organisms: Vec<Rc<RefCell<Organism>>>,
+    pub organisms: Vec<Rc<RefCell<Organism>>>,
     /// Species in the Population. Note that the species should comprise all the genomes
-    species: Vec<Rc<RefCell<Species>>>,
+    pub species: Vec<Rc<RefCell<Species>>>,
 
     // ******* Member variables used during reproduction *******
     ///// For holding the genetic innovations of the newest generation

@@ -4,13 +4,13 @@ use std::rc::Rc;
 use std::cell::RefCell;
 use std::cmp::{Eq, PartialEq};
 
-#[derive(Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum NodeType {
     Neuron,
     Sensor,
 }
 
-#[derive(Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum NodePlace {
     Hidden,
     Input,
@@ -18,11 +18,12 @@ pub enum NodePlace {
     Bias,
 }
 
-#[derive(Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum FunctionType {
     Sigmoid,
 }
 
+#[derive(Debug)]
 pub struct Node {
     /// A node can be given an identification number for saving in files
     pub id: i32,

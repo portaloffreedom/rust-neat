@@ -11,9 +11,14 @@ use node::Node;
 use std::rc::Rc;
 use std::cell::RefCell;
 use std::collections::HashMap;
+use std::path::Path;
+use std::fs::File;
+use std::io::Write;
+use std::io::Result as ioResult;
 
+#[derive(Debug)]
 pub struct Genome {
-    id: i32,
+    pub id: i32,
     traits: Vec<Rc<RefCell<Trait>>>,
     nodes: Vec<Rc<RefCell<Node>>>,
     genes: Vec<Gene>,
@@ -28,6 +33,18 @@ impl Genome {
             nodes: Vec::new(),
             genes: Vec::new(),
         }
+    }
+
+    pub fn nodes_n(&self) -> usize { self.nodes.len() }
+
+    pub fn extrons(&self) -> usize
+    {
+        let mut total: usize = 0;
+        for gene in &self.genes {
+            if gene.enabled() { total += 1; }
+        }
+
+        total
     }
 
     pub fn add_trait(&mut self, gene_trait: Rc<RefCell<Trait>>)
@@ -313,6 +330,31 @@ impl Genome {
             counter_1 += 1;
         }
 
+        //Check for 2 disables in a row
+        //Note:  Again, this is not necessarily a bad sign
+        if self.nodes.len() >= 500 {
+            let mut disab = false;
+            for gene in &self.genes {
+                if (gene.enabled() == false) && (disab == true) {
+                    //println!("ALERT: 2 DISABLES IN A ROW");
+                }
+                if gene.enabled() == false {
+                    disab = true;
+                } else {
+                    disab = false;
+                }
+            }
+        }
+
+
+        Ok(())
+    }
+
+    pub fn print_to_file<P: AsRef<Path>>(&self, file_path: P) -> ioResult<()>
+    {
+        let mut file = File::open(&file_path)?;
+
+        write!(file, "{:?}", self)?;
 
         Ok(())
     }

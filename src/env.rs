@@ -64,7 +64,7 @@ pub struct Env {
     // Number of tries mutate_add_link will attempt to find an open link
     pub newlink_tries: u32,
     // Tells to print population to file every n generations
-    pub print_every: u32,
+    pub print_every: usize,
     // The number of babies to siphon off to the champions
     pub babies_stolen: u32,
 

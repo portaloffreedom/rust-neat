@@ -7,6 +7,8 @@ use node::Node;
 use node::{NodeType, NodePlace};
 use std::rc::Rc;
 use std::cell::RefCell;
+use std::path::Path;
+use organism::Organism;
 
 #[test]
 fn it_loads_env() {
@@ -27,11 +29,8 @@ fn xor_test() {
     let mut gen: u32;
 
     let mut evals: Vec<i32> = vec![0; env.num_runs];
-    let mut genes: Vec<i32> = vec![0; env.num_runs];
-    let mut nodes: Vec<i32> = vec![0; env.num_runs];
-    let winnernum: u32;
-    let winnergenes: u32;
-    let winnernodes: u32;
+    let mut genes: Vec<usize> = vec![0; env.num_runs];
+    let mut nodes: Vec<usize> = vec![0; env.num_runs];
 
     // For averaging
     let mut total_evals: u32 = 0;
@@ -65,27 +64,73 @@ fn xor_test() {
     for exp_count in 0..env.num_runs {
         println!("Spawning Population off Genome2");
 
-        let population = Population::new(&start_genome, env.pop_size, &env);
+        let mut population = Population::new(&start_genome, env.pop_size, &env);
 
         println!("Verifying Spawned Pop");
         population.verify().unwrap();
 
-        for gen in 1..GENERATIONS {
-            println!("Epoch {}", gen);
+        for generation in 1..GENERATIONS {
+            println!("Epoch {}", generation);
 
             //This is how to make a custom filename
-            let file_name = format!("gen_{}", gen);
+            let file_name = format!("gen_{}", generation);
 
             //Check for success
-//            if xor_epoch(population,gen,file_name,winnernum,winnergenes,winnernodes) {
-//                //Collect Stats on end of experiment
-//                evals[expcount]=env.pop_size*(gen-1)+winnernum;
-//                genes[expcount]=winnergenes;
-//                nodes[expcount]=winnernodes;
-//                break;
-//            }
+            if let Ok((winner_num, winner_genes, winner_nodes)) = xor_epoch(&mut population, generation, file_name, &env) {
+                //Collect Stats on end of experiment
+                evals[exp_count] = (env.pop_size as i64 * (generation as i64 - 1) + winner_num as i64) as i32;
+                genes[exp_count] = winner_genes;
+                nodes[exp_count] = winner_nodes;
+                break;
+            }
         }
     }
+}
+
+fn xor_epoch<P: AsRef<Path>>(population: &mut Population, generation: usize, file_name: P, env: &Env)
+                             -> Result<(i32, usize, usize), ()>
+{
+    let mut win = false;
+    let mut winner_num: i32 = 0;
+    let mut winner_genes: usize = 0;
+    let mut winner_nodes: usize = 0;
+
+    for organism in &mut population.organisms {
+        if xor_evaluate(organism).is_ok() {
+            win = true;
+            winner_num = organism.borrow().genome.id;
+            winner_genes = organism.borrow().genome.extrons();
+            winner_nodes = organism.borrow().genome.nodes_n();
+        }
+    }
+
+    for species in &population.species {
+        species.borrow_mut().compute_max_and_average_fitness();
+    }
+
+    if win || env.print_every % generation == 0 {
+        //population.print_to_file_by_species(filename);
+        println!("TODO print on file by species");
+    }
+
+    if win {
+        for organism in &population.organisms {
+            if organism.borrow().is_winner() {
+                println!("WINNER IS #{}", organism.borrow().genome.id);
+                organism.borrow().genome.print_to_file("xor_winner").unwrap();
+            }
+        }
+
+        Ok((winner_num, winner_genes, winner_nodes))
+    } else {
+        Err(())
+    }
+}
+
+fn xor_evaluate(organism: &mut Rc<RefCell<Organism>>)
+                -> Result<(), ()>
+{
+    Ok(())
 }
 
 #[test]

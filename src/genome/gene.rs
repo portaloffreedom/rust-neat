@@ -37,4 +37,6 @@ impl Gene {
     pub fn is_frozen(&self) -> bool { self.frozen }
 
     pub fn get_innovation_num(&self) -> f64 { self.innovation_num }
+
+    pub fn enabled(&self) -> bool { self.enable }
 }
