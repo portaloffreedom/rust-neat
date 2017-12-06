@@ -4,7 +4,7 @@ use link::Link;
 use genome::gene_trait::Trait;
 use node::Node;
 
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Gene {
     pub link: Link,
 

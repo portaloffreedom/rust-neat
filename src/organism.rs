@@ -70,9 +70,13 @@ impl Organism {
         }
     }
 
-    pub fn set_species(&mut self, species: Rc<RefCell<Species>>) {
+    pub fn set_species(&mut self, species: Rc<RefCell<Species>>)
+    {
         self.species = Some(species);
     }
 
-    pub fn has_species(&self) -> bool { self.species.is_some() }
+    pub fn has_species(&self) -> bool
+    {
+        self.species.is_some()
+    }
 }

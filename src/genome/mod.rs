@@ -259,8 +259,61 @@ impl Genome {
             }
         }
 
-        env.disjoint_coeff*(num_disjoint/1.0)
-            + env.excess_coeff*(num_excess/1.0)
-            + env.mutdiff_coeff*(mut_diff_total/num_matching)
+        env.disjoint_coeff * (num_disjoint / 1.0)
+            + env.excess_coeff * (num_excess / 1.0)
+            + env.mutdiff_coeff * (mut_diff_total / num_matching)
+    }
+
+    pub fn verify(&self) -> Result<(), String>
+    {
+        //Check each gene's nodes
+        for gene in &self.genes {
+            let i_node = &gene.link.i_node;
+            let o_node = &gene.link.o_node;
+
+            let mut i_node_found = false;
+            let mut o_node_found = false;
+
+            // look for i_node and o_node
+            for node in &self.nodes {
+                if i_node == node {
+                    i_node_found = true;
+                } else if o_node == node {
+                    o_node_found = true;
+                }
+            }
+
+            if !i_node_found {
+                return Err(format!("input node in link not found in node list for node: {:?}", gene));
+            }
+            if !o_node_found {
+                return Err(format!("output node in link not found in node list for node: {:?}", gene));
+            }
+        }
+
+        //Check for NNodes being out of order
+        let mut last_id: i32 = 0;
+        for node in &self.nodes {
+            if node.borrow().id < last_id {
+                return Err(format!("Nodes out of order!"));
+            }
+            last_id = node.borrow().id;
+        }
+
+        //Make sure there are no duplicate genes
+        let mut counter_1: usize = 0;
+        for gene in &self.genes {
+            let mut counter_2: usize = 0;
+            for gene2 in &self.genes {
+                if counter_1 != counter_2 && gene == gene2 {
+                    return Err(format!("Duplicated genes"));
+                }
+                counter_2 += 1;
+            }
+            counter_1 += 1;
+        }
+
+
+        Ok(())
     }
 }

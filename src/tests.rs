@@ -68,6 +68,7 @@ fn xor_test() {
         let population = Population::new(&start_genome, env.pop_size, &env);
 
         println!("Verifying Spawned Pop");
+        population.verify().unwrap();
 
         for gen in 1..GENERATIONS {
             println!("Epoch {}", gen);

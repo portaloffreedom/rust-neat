@@ -106,4 +106,13 @@ impl Population {
 
         self.last_species = counter;
     }
+
+    pub fn verify(&self) -> Result<(), String>
+    {
+        for ref organism in &self.organisms {
+            organism.borrow().genome.verify()?;
+        }
+
+        Ok(())
+    }
 }

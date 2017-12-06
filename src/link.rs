@@ -2,6 +2,7 @@ use genome::gene_trait::Trait;
 use node::Node;
 use std::rc::Rc;
 use std::cell::RefCell;
+use std::cmp::{Eq, PartialEq};
 
 #[derive(Clone)]
 pub struct Link {
@@ -35,3 +36,34 @@ impl Link {
         }
     }
 }
+
+use std::fmt::{Formatter, Debug};
+use std::fmt::Result as fmtResult;
+
+impl Debug for Link {
+    fn fmt(&self, f: &mut Formatter) -> fmtResult {
+        unimplemented!()
+    }
+}
+
+impl PartialEq for Link {
+    fn eq(&self, other: &Link) -> bool {
+        if self.weight != other.weight { return false; }
+        if self.link_trait.is_some() && other.link_trait.is_some() {
+            if self.link_trait.ne(&other.link_trait) {
+                return false;
+            }
+        } else if self.link_trait.is_some() || other.link_trait.is_some() {
+            return false;
+        }
+
+        if self.i_node != other.i_node { return false }
+        if self.o_node != other.o_node { return false }
+        if self.time_delay != other.time_delay { return false }
+        if self.recurrent != other.recurrent { return false }
+
+        return true;
+    }
+}
+
+impl Eq for Link {}

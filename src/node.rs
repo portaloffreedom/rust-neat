@@ -2,14 +2,15 @@ use genome::gene_trait::{NUM_TRAIT_PARAMS,Trait};
 use link::Link;
 use std::rc::Rc;
 use std::cell::RefCell;
+use std::cmp::{Eq, PartialEq};
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Eq, PartialEq)]
 pub enum NodeType {
     Neuron,
     Sensor,
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Eq, PartialEq)]
 pub enum NodePlace {
     Hidden,
     Input,
@@ -17,7 +18,7 @@ pub enum NodePlace {
     Bias,
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Eq, PartialEq)]
 pub enum FunctionType {
     Sigmoid,
 }
@@ -124,3 +125,29 @@ impl Node {
         }
     }
 }
+
+impl PartialEq for Node {
+    fn eq(&self, other: &Node) -> bool {
+        if self.id != other.id { return false }
+        if self.node_trait.is_some() && other.node_trait.is_some() {
+            let node_trait_1 = self.node_trait.clone().unwrap();
+            let node_trait_2 = other.node_trait.clone().unwrap();
+            if node_trait_1.borrow().id != node_trait_2.borrow().id {
+                return false;
+            }
+        } else if self.node_trait.is_some() || other.node_trait.is_some() {
+            return false;
+        }
+
+        if self.override_node != other.override_node { return false }
+        if self.function_type != other.function_type { return false }
+        if self.node_type != other.node_type { return false }
+        if self.node_place != other.node_place { return false }
+        if self.incoming.len() != other.incoming.len() { return false }
+        if self.outgoing.len() != other.outgoing.len() { return false }
+        if self.active_flag != other.active_flag { return false }
+
+        return true;
+    }
+}
+impl Eq for Node {}
